@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="description" content="A clear, calm overview of your infrastructure health." />
+  <title>Orbit — Infrastructure overview</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #11182a;
+      --panel-soft: #151e32;
+      --line: rgba(165, 183, 220, .12);
+      --muted: #8f9bb5;
+      --text: #f2f5fc;
+      --mint: #73e5bd;
+      --blue: #7aa8ff;
+      --purple: #b393ff;
+      --orange: #ffbd7b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: radial-gradient(ellipse at 75% -10%, rgba(73, 94, 171, .2), transparent 38%), var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; }
+    .app { display: flex; min-height: 100vh; }
+    aside {
+      width: 248px; flex: 0 0 248px; padding: 28px 18px;
+      border-right: 1px solid var(--line); background: rgba(10, 15, 29, .72);
+      display: flex; flex-direction: column;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 12px 35px; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: linear-gradient(145deg, #81e8c1, #68aaff); color: #0b1420; font-size: 19px; font-weight: 700; box-shadow: 0 5px 22px #73e5bd33; }
+    .brand-name { font: 700 20px 'Space Grotesk', sans-serif; letter-spacing: -.7px; }
+    .workspace { color: var(--muted); font-size: 11px; letter-spacing: .12em; font-weight: 700; padding: 0 12px 12px; text-transform: uppercase; }
+    .nav { display: grid; gap: 5px; }
+    .nav a { display: flex; align-items: center; gap: 13px; padding: 11px 12px; text-decoration: none; color: #9da9c0; font-size: 13px; border-radius: 9px; transition: .2s; }
+    .nav a:hover, .nav a.active { background: #19233a; color: var(--text); }
+    .nav a.active { box-shadow: inset 2px 0 var(--mint); }
+    .nav-icon { width: 18px; text-align: center; color: #8392b0; font-size: 16px; }
+    .nav a.active .nav-icon { color: var(--mint); }
+    .side-bottom { margin-top: auto; }
+    .help-card { border: 1px solid var(--line); background: linear-gradient(145deg, #151e32, #111827); border-radius: 12px; padding: 15px; }
+    .help-card strong { display: block; font-size: 12px; margin-bottom: 5px; }
+    .help-card p { margin: 0 0 12px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .help-card a { color: var(--mint); text-decoration: none; font-size: 11px; font-weight: 700; }
+    main { flex: 1; min-width: 0; padding: 30px clamp(22px, 4vw, 58px) 48px; max-width: 1600px; margin: auto; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 35px; }
+    .eyebrow { color: var(--mint); text-transform: uppercase; letter-spacing: .13em; font-size: 10px; font-weight: 700; margin-bottom: 8px; }
+    h1 { font: 600 clamp(25px, 3vw, 33px) 'Space Grotesk', sans-serif; letter-spacing: -1.2px; margin: 0; }
+    .subtitle { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .range { background: var(--panel); border: 1px solid var(--line); color: #c5cee0; border-radius: 8px; padding: 10px 12px; font-size: 12px; }
+    .avatar { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: #d7ceff; background: linear-gradient(145deg, #534d8b, #233d60); font-size: 12px; font-weight: 700; border: 1px solid #a798ff55; }
+    .status-banner { display: flex; align-items: center; gap: 12px; padding: 14px 17px; margin-bottom: 22px; border: 1px solid #73e5bd2c; border-radius: 10px; background: linear-gradient(90deg, #73e5bd0d, #73e5bd03); }
+    .pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 4px #73e5bd1c; }
+    .status-banner strong { font-size: 12px; font-weight: 600; }
+    .status-banner span { color: var(--muted); font-size: 11px; margin-left: auto; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 18px; }
+    .card { border: 1px solid var(--line); background: linear-gradient(145deg, rgba(20, 29, 48, .92), rgba(15, 22, 38, .92)); border-radius: 12px; }
+    .metric { padding: 18px 19px; min-height: 126px; }
+    .metric-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 11px; }
+    .metric-icon { width: 27px; height: 27px; border-radius: 8px; display: grid; place-items: center; background: #7aa8ff14; color: var(--blue); font-size: 14px; }
+    .metric-value { font: 600 27px 'Space Grotesk', sans-serif; letter-spacing: -.7px; margin: 13px 0 5px; }
+    .metric-foot { color: #8490a8; font-size: 10px; }
+    .up { color: var(--mint); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(260px, .85fr); gap: 17px; margin-bottom: 18px; }
+    .chart-card, .deploy-card, .services-card { padding: 20px; }
+    .card-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    h2 { font: 600 14px 'Space Grotesk', sans-serif; margin: 0; letter-spacing: -.2px; }
+    .card-caption { color: var(--muted); font-size: 10px; margin-top: 5px; }
+    .legend { display: flex; gap: 15px; color: #a4afc5; font-size: 10px; }
+    .legend i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; background: var(--blue); }
+    .legend span:last-child i { background: var(--purple); }
+    .chart { height: 184px; width: 100%; margin-top: 19px; overflow: visible; }
+    .gridline { stroke: #ffffff0b; stroke-width: 1; }
+    .chart-label { fill: #75829e; font: 9px 'DM Sans', sans-serif; }
+    .deploy { display: flex; gap: 12px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+    .deploy:last-child { border: 0; padding-bottom: 0; }
+    .deploy-symbol { flex: 0 0 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: var(--mint); background: #73e5bd13; font-size: 13px; }
+    .deploy-main { min-width: 0; flex: 1; }
+    .deploy-title { font-size: 11px; font-weight: 600; }
+    .deploy-meta { color: var(--muted); font-size: 10px; margin-top: 5px; }
+    .tag { border-radius: 5px; padding: 4px 6px; align-self: flex-start; color: var(--mint); background: #73e5bd12; font-size: 9px; }
+    .services-card { padding: 0; overflow: hidden; }
+    .services-head { display: flex; justify-content: space-between; align-items: center; padding: 19px 20px; border-bottom: 1px solid var(--line); }
+    .text-link { color: var(--mint); font-size: 10px; text-decoration: none; font-weight: 600; }
+    .service-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .service-table th { color: #77849e; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; padding: 12px 20px; }
+    .service-table td { border-top: 1px solid #ffffff08; color: #c6cee0; font-size: 11px; padding: 13px 20px; }
+    .service-name { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #e4e9f4; }
+    .service-icon { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 7px; background: #7aa8ff13; color: var(--blue); font-size: 11px; }
+    .health { display: flex; align-items: center; gap: 7px; color: #9ce8cb; }
+    .health:before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--mint); }
+    .latency { font-variant-numeric: tabular-nums; }
+    .footer { color: #65728c; font-size: 10px; text-align: center; padding-top: 25px; }
+    @media (max-width: 1000px) { aside { width: 210px; flex-basis: 210px; } .metrics { grid-template-columns: repeat(2, 1fr); } .layout { grid-template-columns: 1fr; } }
+    @media (max-width: 680px) { .app { display: block; } aside { width: 100%; padding: 15px 18px; border-right: 0; border-bottom: 1px solid var(--line); } .brand { padding: 0 2px; } .workspace, .side-bottom { display: none; } .nav { display: flex; overflow: auto; margin-top: 14px; } .nav a { flex: 0 0 auto; padding: 9px 10px; font-size: 11px; } .nav a.active { box-shadow: inset 0 -2px var(--mint); } main { padding: 25px 17px 35px; } header { align-items: flex-start; } .range { display: none; } .status-banner span { display: none; } .metrics { gap: 10px; } .metric { padding: 14px; min-height: 116px; } .metric-value { font-size: 23px; } .chart-card, .deploy-card { padding: 16px; } .services-card { overflow-x: auto; } .service-table { min-width: 590px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand"><div class="brand-mark">◈</div><div class="brand-name">orbit</div></div>
+      <div class="workspace">Workspace</div>
+      <nav class="nav" aria-label="Main navigation">
+        <a class="active" href="#overview"><span class="nav-icon">◫</span>Overview</a>
+        <a href="#services"><span class="nav-icon">▦</span>Services</a>
+        <a href="#deployments"><span class="nav-icon">⇧</span>Deployments</a>
+        <a href="#metrics"><span class="nav-icon">⌁</span>Monitoring</a>
+        <a href="#settings"><span class="nav-icon">⚙</span>Settings</a>
+      </nav>
+      <div class="side-bottom"><div class="help-card"><strong>Need a hand?</strong><p>Explore the docs to get the most out of your infrastructure.</p><a href="#docs">Read the docs ↗</a></div></div>
+    </aside>
+
+    <main id="overview">
+      <header>
+        <div><div class="eyebrow">Monday, November 9</div><h1>Good morning, Raj 👋</h1><p class="subtitle">Here’s what’s happening across your infrastructure.</p></div>
+        <div class="header-actions"><button class="range" type="button">Last 24 hours&nbsp; ▾</button><div class="avatar" aria-label="Raj's profile">R</div></div>
+      </header>
+
+      <section class="status-banner" aria-label="System status"><span class="pulse"></span><strong>All systems operational</strong><span>Last checked just now</span></section>
+
+      <section class="metrics" id="metrics" aria-label="Key metrics">
+        <article class="card metric"><div class="metric-top">Total requests <span class="metric-icon">↗</span></div><div class="metric-value">2.4M</div><div class="metric-foot"><span class="up">↑ 12.8%</span> vs. previous 24h</div></article>
+        <article class="card metric"><div class="metric-top">Avg. response time <span class="metric-icon" style="color:var(--purple);background:#b393ff14">◷</span></div><div class="metric-value">128<span style="font-size:14px;color:#929db4"> ms</span></div><div class="metric-foot"><span class="up">↓ 8.2%</span> vs. previous 24h</div></article>
+        <article class="card metric"><div class="metric-top">Error rate <span class="metric-icon" style="color:var(--orange);background:#ffbd7b14">⌁</span></div><div class="metric-value">0.08<span style="font-size:14px;color:#929db4">%</span></div><div class="metric-foot"><span class="up">↓ 0.03%</span> vs. previous 24h</div></article>
+        <article class="card metric"><div class="metric-top">Active services <span class="metric-icon" style="color:var(--mint);background:#73e5bd14">▦</span></div><div class="metric-value">12<span style="font-size:14px;color:#929db4"> / 12</span></div><div class="metric-foot">Across 3 environments</div></article>
+      </section>
+
+      <section class="layout">
+        <article class="card chart-card">
+          <div class="card-heading"><div><h2>Traffic overview</h2><div class="card-caption">Request volume across your services</div></div><div class="legend"><span><i></i>Requests</span><span><i></i>Errors</span></div></div>
+          <svg class="chart" viewBox="0 0 650 190" preserveAspectRatio="none" role="img" aria-label="Traffic chart showing request volume and errors over 24 hours">
+            <defs><linearGradient id="fillBlue" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7aa8ff" stop-opacity=".19"/><stop offset="1" stop-color="#7aa8ff" stop-opacity="0"/></linearGradient><linearGradient id="fillPurple" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b393ff" stop-opacity=".12"/><stop offset="1" stop-color="#b393ff" stop-opacity="0"/></linearGradient></defs>
+            <line class="gridline" x1="0" y1="25" x2="650" y2="25"/><line class="gridline" x1="0" y1="68" x2="650" y2="68"/><line class="gridline" x1="0" y1="111" x2="650" y2="111"/><line class="gridline" x1="0" y1="154" x2="650" y2="154"/>
+            <path d="M0 128 C28 124 39 115 59 119 S99 135 118 115 S151 95 177 105 S211 118 236 91 S268 78 295 91 S335 112 354 82 S389 61 414 76 S450 89 472 60 S513 48 531 64 S565 81 589 47 S622 33 650 40 L650 165 L0 165Z" fill="url(#fillBlue)"/>
+            <path d="M0 128 C28 124 39 115 59 119 S99 135 118 115 S151 95 177 105 S211 118 236 91 S268 78 295 91 S335 112 354 82 S389 61 414 76 S450 89 472 60 S513 48 531 64 S565 81 589 47 S622 33 650 40" fill="none" stroke="#7aa8ff" stroke-width="2.5"/>
+            <path d="M0 147 C30 146 40 138 61 142 S100 151 119 141 S154 129 177 138 S215 142 237 128 S272 125 295 131 S335 144 354 127 S390 119 414 128 S449 137 472 119 S511 111 531 122 S567 132 589 114 S624 104 650 111 L650 165 L0 165Z" fill="url(#fillPurple)"/>
+            <path d="M0 147 C30 146 40 138 61 142 S100 151 119 141 S154 129 177 138 S215 142 237 128 S272 125 295 131 S335 144 354 127 S390 119 414 128 S449 137 472 119 S511 111 531 122 S567 132 589 114 S624 104 650 111" fill="none" stroke="#b393ff" stroke-width="1.7"/>
+            <text class="chart-label" x="0" y="183">12 AM</text><text class="chart-label" x="155" y="183">6 AM</text><text class="chart-label" x="315" y="183">12 PM</text><text class="chart-label" x="477" y="183">6 PM</text><text class="chart-label" x="622" y="183">Now</text>
+          </svg>
+        </article>
+        <article class="card deploy-card" id="deployments">
+          <div class="card-heading"><div><h2>Recent deployments</h2><div class="card-caption">Your latest changes in production</div></div><a class="text-link" href="#all-deployments">View all</a></div>
+          <div class="deploy"><div class="deploy-symbol">✓</div><div class="deploy-main"><div class="deploy-title">api-gateway <span style="color:#7b89a3;font-weight:400">· v2.8.1</span></div><div class="deploy-meta">main · 14 minutes ago</div></div><span class="tag">Live</span></div>
+          <div class="deploy"><div class="deploy-symbol">✓</div><div class="deploy-main"><div class="deploy-title">web-dashboard <span style="color:#7b89a3;font-weight:400">· v1.14.0</span></div><div class="deploy-meta">main · 2 hours ago</div></div><span class="tag">Live</span></div>
+          <div class="deploy"><div class="deploy-symbol">✓</div><div class="deploy-main"><div class="deploy-title">worker-service <span style="color:#7b89a3;font-weight:400">· v3.2.4</span></div><div class="deploy-meta">release · 5 hours ago</div></div><span class="tag">Live</span></div>
+        </article>
+      </section>
+
+      <section class="card services-card" id="services">
+        <div class="services-head"><div><h2>Services</h2><div class="card-caption">Health and performance at a glance</div></div><a class="text-link" href="#all-services">All services&nbsp; →</a></div>
+        <table class="service-table"><thead><tr><th>Service</th><th>Status</th><th>Requests / min</th><th>Latency</th><th>Region</th></tr></thead><tbody>
+          <tr><td><span class="service-name"><span class="service-icon">⌘</span>API Gateway</span></td><td><span class="health">Operational</span></td><td>12,840</td><td class="latency">86 ms</td><td>us-east-1</td></tr>
+          <tr><td><span class="service-name"><span class="service-icon" style="color:var(--purple);background:#b393ff13">◈</span>Web Dashboard</span></td><td><span class="health">Operational</span></td><td>8,291</td><td class="latency">112 ms</td><td>us-east-1</td></tr>
+          <tr><td><span class="service-name"><span class="service-icon" style="color:var(--orange);background:#ffbd7b13">⇄</span>Worker Service</span></td><td><span class="health">Operational</span></td><td>3,405</td><td class="latency">64 ms</td><td>eu-west-1</td></tr>
+        </tbody></table>
+      </section>
+      <div class="footer">All systems looking good&nbsp; ✦ &nbsp;Updated just now</div>
+    </main>
+  </div>
+</body>
+</html>
